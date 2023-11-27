@@ -5,11 +5,24 @@ import random
 import imageio
 import math
 from pygame.locals import *
-
- 
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 pygame.init()
 font = pygame.font.Font(None, 20)
+
+# Set up credentials
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+credentials = ServiceAccountCredentials.from_json_keyfile_name("/Users/jiwonbae/Codable/pythongame/hulahula/eighth-breaker-406405-db255db36bf9.json", scope)
+gc = gspread.authorize(credentials)
+
+# Open the Google Spreadsheet using its title
+spreadsheet = gc.open("Rangtal: Scoreboard")
+
+# Select the worksheet
+worksheet = spreadsheet.sheet1
+
+worksheet.update_acell("A1", "New Score")
 
 # Constants
 FPS = 60
@@ -28,6 +41,23 @@ stack_sound = pygame.mixer.Sound("420882__inspectorj__impact-ice-moderate-a.wav"
 
 # Play background music
 pygame.mixer.music.play(-1) 
+
+class Background:
+    def __init__(self, image_path1, image_path2):
+        self.image1 = pygame.image.load(image_path1).convert()
+        self.image2 = pygame.image.load(image_path2).convert()
+        self.image1 = pygame.transform.scale(self.image1, (400, 600))
+        self.image2 = pygame.transform.scale(self.image2, (400, 600))
+        self.y_position = 0
+
+    def update(self):
+        self.y_position += 1
+        if self.y_position >= self.image1.get_height():
+            self.y_position = 0
+
+    def draw(self, surface):
+        surface.blit(self.image1, (0, self.y_position))
+        surface.blit(self.image2, (0, self.y_position - self.image1.get_height()))
 
 # Define Scoop sprite
 class Scoop(pygame.sprite.Sprite):
@@ -190,14 +220,15 @@ WHITE = (255, 255, 255)
 dongflag_timer = 0
 dongflag_delay = 8 * FPS
 
-background = pygame.image.load("RANGJOE.png").convert()
-background_scale = pygame.transform.scale(background, (400, 600))
+background = Background("RANGJOE.png", "SKY.png")
+
 # sky_background = pygame.image.load("RANGJOE.png").convert()
 # sky_background_scale = pygame.transform.scale(background, (400, 600))
 start_background = pygame.image.load("Start.png")
 start_background_fin = pygame.transform.scale(start_background, (400, 600))
 
 bg_y = 0  # Initial y-position of the background
+
 
 while Running:
     for event in pygame.event.get():
@@ -353,14 +384,16 @@ while Running:
         
         dongflag = 0
 
-        # display.blit(background, (0, 0))
-        display.blit(background_scale, (0, bg_y))
-        display.blit(background_scale, (0, bg_y - background_scale.get_height()))
+        # # display.blit(background, (0, 0))
+        # display.blit(background_scale, (0, bg_y))
+        # display.blit(background_scale, (0, bg_y - background_scale.get_height()))
 
-        # Increment the y-position of the background to move upwards
-        bg_y += 1
-        if bg_y >= background_scale.get_height():
-            bg_y = 0
+        # # Increment the y-position of the background to move upwards
+        # bg_y += 1
+        # if bg_y >= background_scale.get_height():
+        #     bg_y = 0
+        background.update()
+        background.draw(display)
         
         Cone1.draw(display)
         Scoop1.draw(display)
