@@ -22,7 +22,7 @@ spreadsheet = gc.open("Rangtal: Scoreboard")
 # Select the worksheet
 worksheet = spreadsheet.sheet1
 
-worksheet.update_acell("A1", "New Score")
+worksheet.update_acell("A1", "JWB")
 
 # Constants
 FPS = 60
@@ -214,11 +214,13 @@ flag_dong =0
 flag_cone =0
 tick = 0
 stack = 0
+end_flag = 0
 Numb_hearts = 3
 dongflag = 0
 WHITE = (255, 255, 255)
 dongflag_timer = 0
 dongflag_delay = 8 * FPS
+input_text = ""
 
 background = Background("RANGJOE.png", "SKY.png")
 
@@ -235,32 +237,66 @@ while Running:
         if event.type == pygame.QUIT:
             Running = False
         elif event.type == pygame.KEYDOWN:
+            if game_state == "end_score":
+                if event.key == pygame.K_BACKSPACE:
+                    # Handle backspace to delete characters from the input
+                    input_text = input_text[:-1]
+
+                else:
+                    # Handle other key presses to build the input_text
+                    input_text += event.unicode
+                    
             if event.key == K_RETURN:  # Enter key
                 if game_state == "start":
                     game_state = "playing"
+                elif game_state == "end_score":
+                    input_text = ""
+                    # Change the game state
+                    game_state = "end"
+                    Numb_hearts = 3
+                    print("ENTER WAS PRESSED")
+                    break
                 elif game_state == "end":
                     game_state = "playing"
                     Numb_hearts = 3
-                    max_score =0
+                    max_score = 0
             if event.key == K_ESCAPE:
                 Running = False
             if event.key == K_t:
                 Numb_hearts = 0
     
+    print(game_state)
+    
     if Numb_hearts == 0:
-        game_state = "end"
+        game_state = "end_score"
         
-            
     if game_state == "start":
         # Display the start screen
         display.blit(start_background_fin, (0, 0))
         frame = pygame.surfarray.array3d(display)  
         frames.append(frame)
-    
-    elif game_state == "end":
-        # Display the end screen
+
+    elif game_state == "end_score":
         pygame.mixer.music.pause()
         display.fill(WHITE)
+        endscore_text = font.render(f"Your Score is: {max_score}", True, (0, 0, 0))
+        display.blit(endscore_text, (140, 260))
+        endscore = font.render(f"New Score! Type in your initials to save your score!", True, (0, 0, 0))
+        display.blit(endscore, (40, 300))
+
+        # Draw the input text on the screen
+        inputtext1 = font.render(f"{input_text}", True, (0, 0, 0))
+        display.blit(inputtext1, (140, 360))
+
+        endscores = font.render(f"Press enter after you're done!", True, (0, 0, 0))
+        display.blit(endscores, (120, 400))
+        
+        
+    elif game_state == "end":
+        # Display the end screen
+        display.fill(WHITE)
+        worksheet.update_acell("B1", f"{max_score}")
+        worksheet.update_acell("A1", f"{input_text}")
         endscore_text = font.render(f"Your Score is: {max_score}", True, (0, 0, 0))
         display.blit(endscore_text, (140, 260))
         end1_text = font.render(f"BOO HOO GAME OVER", True, (0, 0, 0))
@@ -269,12 +305,34 @@ while Running:
         display.blit(end2_text, (80, 320))
         end3_text = font.render(f"Press ESC to Quit game", True, (0, 0, 0))
         display.blit(end3_text, (120, 340))
+        
+        data_range1 = worksheet.get("A1:B1")
+        data_range2 = worksheet.get("A2:B2")
+        data_range3 = worksheet.get("A3:B3")
+        
+        if end_flag == 1:
+            if data_range1:
+                data_string1 = f"{data_range1[0][0]} : {data_range1[0][1]}"
+                data_text1 = font.render(data_string1, True, (0, 0, 0))
+
+                data_string2 = f"{data_range2[0][0]} : {data_range2[0][1]}"
+                data_text2 = font.render(data_string2, True, (0, 0, 0))
+
+                data_string3 = f"{data_range3[0][0]} : {data_range3[0][1]}"
+                data_text3 = font.render(data_string3, True, (0, 0, 0))
+                end_flag = 0
+        
+        display.blit(data_text1, (120, 380))       
+        display.blit(data_text2, (120, 420))
+        display.blit(data_text3, (120, 460))
+        
         tick = tick +1
         if tick%3 == 0:
             frame = pygame.surfarray.array3d(display)  # Convert the Pygame surface to a NumPy array
             frames.append(frame)
         
     elif game_state == "playing":
+        end_flag = 1
         Cone1.update()
         Stackice1.update()
         stackice2.update()
