@@ -222,21 +222,43 @@ dongflag_timer = 0
 dongflag_delay = 8 * FPS
 input_text = ""
 
+tutorial_end = 0
+tutorial_timer = pygame.time.get_ticks()
+
 background = Background("RANGJOE.png", "SKY.png")
 
 # sky_background = pygame.image.load("RANGJOE.png").convert()
 # sky_background_scale = pygame.transform.scale(background, (400, 600))
-start_background = pygame.image.load("Start.png")
+start_background = pygame.image.load("Press enter to play.png")
 start_background_fin = pygame.transform.scale(start_background, (400, 600))
+start_background1 = pygame.image.load("1.png")
+start_background_fin1 = pygame.transform.scale(start_background1, (400, 600))
+start_background2 = pygame.image.load("2.png")
+start_background_fin2 = pygame.transform.scale(start_background2, (400, 600))
+start_background3 = pygame.image.load("3.png")
+start_background_fin3 = pygame.transform.scale(start_background3, (400, 600))
+start_background4 = pygame.image.load("4.png")
+start_background_fin4 = pygame.transform.scale(start_background4, (400, 600))
+start_background5 = pygame.image.load("5.png")
+start_background_fin5 = pygame.transform.scale(start_background5, (400, 600))
+start_background6 = pygame.image.load("6.png")
+start_background_fin6 = pygame.transform.scale(start_background6, (400, 600))
+start_background7 = pygame.image.load("7.png")
+start_background_fin7 = pygame.transform.scale(start_background7, (400, 600))
 
 bg_y = 0  # Initial y-position of the background
-
+tutorial_end =0
 
 while Running:
+    current_time = pygame.time.get_ticks()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             Running = False
         elif event.type == pygame.KEYDOWN:
+            if event.key == K_s:
+                game_state = "playing"
+            if event.key == K_w:
+                game_state = "tutorial"
             if game_state == "end_score":
                 if event.key == pygame.K_BACKSPACE:
                     # Handle backspace to delete characters from the input
@@ -250,7 +272,7 @@ while Running:
                 if game_state == "start":
                     game_state = "playing"
                 elif game_state == "end_score":
-                    input_text = ""
+                    # input_text = ""
                     # Change the game state
                     game_state = "end"
                     Numb_hearts = 3
@@ -275,6 +297,47 @@ while Running:
         display.blit(start_background_fin, (0, 0))
         frame = pygame.surfarray.array3d(display)  
         frames.append(frame)
+        
+    if game_state == "tutorial":
+        tutorial_steps = [
+            {"image": start_background_fin1, "duration": 3000},
+            {"image": start_background_fin2, "duration": 3000},
+            {"image": start_background_fin3, "duration": 3000},
+            {"image": start_background_fin4, "duration": 6000},
+            {"image": start_background_fin5, "duration": 6000},
+            {"image": start_background_fin6, "duration": 6000},
+            {"image": start_background_fin7, "duration": 3000}
+            # Add more steps as needed
+        ]
+
+        current_step = 0
+        tutorial_timer = pygame.time.get_ticks()
+
+        while current_step < len(tutorial_steps):
+            current_time = pygame.time.get_ticks()
+
+            # Event handling within the tutorial loop
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    Running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == K_s:
+                        # Exit the tutorial and start playing
+                        current_step = len(tutorial_steps)
+                        game_state = "playing"
+
+            if current_step < len(tutorial_steps) - 1 and current_time - tutorial_timer >= tutorial_steps[current_step]["duration"]:
+                current_step += 1
+                tutorial_timer = pygame.time.get_ticks()
+
+            if current_step < len(tutorial_steps):
+                display.blit(tutorial_steps[current_step]["image"], (0, 0))
+                pygame.display.update()
+
+            # Add a small delay to avoid rapid progression
+            pygame.time.delay(10)
+                
+            print("DONE")
 
     elif game_state == "end_score":
         pygame.mixer.music.pause()
